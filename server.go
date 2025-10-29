@@ -7,6 +7,7 @@ import (
 	"net/http" // HTTP 관련 기능(서버, 요청 처리 등)을 다루는 패키지입니다.
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // 'handler' 함수는 누군가 웹사이트에 접속할 때 실행됩니다.
@@ -85,6 +86,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Fprintf(w, "파일 업로드 성공! 파일명: %s (MIME: %s)", handler.Filename, mimeType)
+		fmt.Fprintf(w, "<br><br><a href=\"/\">홈으로 돌아가기</a>")
 	} else {
 		entries, err := os.ReadDir("uploads")
 		if err != nil {
@@ -93,7 +95,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 		var files []string
 		for _, entry := range entries {
-			if !entry.IsDir() {
+			isNotHidden := !strings.HasPrefix(entry.Name(), ".")
+			isNotDirectory := !entry.IsDir()
+			if isNotHidden && isNotDirectory {
 				files = append(files, entry.Name())
 			}
 		}
@@ -111,7 +115,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			<div style="display: flex; flex-wrap: wrap; gap: 10px;">
 				{{range .}}
 					<div style="border: 1px solid #ccc; padding: 5px; text-align: center;">
-						<a href="/files/{{.}}" target="_blank">
+						<a href="/files/{{.}}" target="_blank" download>
 							<img src="/files/{{.}}" alt="{{.}}" width="200" height="200" style="object-fit: cover;">
 							<br>
 							<small>{{.}}</small>
