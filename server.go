@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io"
 	"net/http" // HTTP 관련 기능(서버, 요청 처리 등)을 다루는 패키지입니다.
 	"os"
@@ -85,19 +86,49 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Fprintf(w, "파일 업로드 성공! 파일명: %s (MIME: %s)", handler.Filename, mimeType)
 	} else {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprintf(w, `
-			<h2> Go 파일 업로드 서비스</h2>
-			<p> JPG 또는 PNG 파일만 업로드할 수 있습니다. </p>
+		entries, err := os.ReadDir("uploads")
+		if err != nil {
+			fmt.Println("uploads 디렉터리 읽기 실패 : ", err)
+		}
 
+		var files []string
+		for _, entry := range entries {
+			if !entry.IsDir() {
+				files = append(files, entry.Name())
+			}
+		}
+		htmlTemplate := `
+			<h2>Go 파일 업로드 서비스</h2>
 			<form action="/" method="POST" enctype="multipart/form-data">
-			
-				<label for="file">파일 선택:</label>
+				<label for="file">파일 선택 (JPG, PNG):</label>
 				<input type="file" id="file" name="uploadFile">
-				<br><br>
 				<input type="submit" value="업로드 시작">
 			</form>
-		`)
+			
+			<hr>
+			
+			<h3>업로드된 파일 목록 ({{len .}} 개)</h3>
+			<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+				{{range .}}
+					<div style="border: 1px solid #ccc; padding: 5px; text-align: center;">
+						<a href="/files/{{.}}" target="_blank">
+							<img src="/files/{{.}}" alt="{{.}}" width="200" height="200" style="object-fit: cover;">
+							<br>
+							<small>{{.}}</small>
+						</a>
+					</div>
+				{{end}}
+			</div>
+		`
+
+		tmpl, err := template.New("index").Parse(htmlTemplate)
+		if err != nil {
+			http.Error(w, "템플릿 파싱 오류", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		tmpl.Execute(w, files)
 	}
 }
 
