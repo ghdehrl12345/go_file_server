@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"net/http" // HTTP 관련 기능(서버, 요청 처리 등)을 다루는 패키지입니다.
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -137,7 +137,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// http.HandleFunc은 "만약 / 주소로 요청이 오면, 'handler' 함수를 실행해!"라고 등록하는 것입니다.
 	http.HandleFunc("/", handler)
 
 	fs := http.FileServer(http.Dir("uploads"))
@@ -147,8 +146,6 @@ func main() {
 	fmt.Println("서버가 8080 포트에서 실행 중")
 
 	os.MkdirAll("uploads", os.ModePerm)
-	// http.ListenAndServe는 실제로 8080 포트에서 서버를 시작하고 요청을 '듣기' 시작합니다.
-	// 만약 서버 시작에 실패하면(예: 다른 프로그램이 8080 포트를 이미 사용 중) 에러를 반환합니다.
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("서버 시작 실패:", err)
