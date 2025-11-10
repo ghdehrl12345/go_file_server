@@ -31,7 +31,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 		filename := filepath.Base(handler.Filename)
 
-		ext := filepath.Ext(filename)
+		ext := strings.ToLower(filepath.Ext(filename))
 		if ext != ".jpg" && ext != ".png" {
 			http.Error(w, "허영되지 않은 파일 확장자입니다 (.jpg, .png만 가능)", http.StatusBadRequest)
 			return
@@ -85,8 +85,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Fprintf(w, "파일 업로드 성공! 파일명: %s (MIME: %s)", handler.Filename, mimeType)
-		fmt.Fprintf(w, "<br><br><a href=\"/\">홈으로 돌아가기</a>")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	} else {
 		entries, err := os.ReadDir("uploads")
 		if err != nil {
