@@ -13,7 +13,6 @@ import (
 // 'handler' 함수는 누군가 웹사이트에 접속할 때 실행됩니다.
 func handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		fmt.Fprintf(w, "POST 요청, 파일 처리 시작")
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
 			http.Error(w, "폼 파싱 실패", http.StatusBadRequest)
